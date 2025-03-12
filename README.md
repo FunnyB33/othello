@@ -274,5 +274,24 @@ def log_user_login(user_id):
 
 ---
 
-これらを踏まえて、まずは最小限の機能（ゲストプレイで対戦できるシステム）から実装して、動作確認しながら機能を拡張していくと良いよ。  
-何か具体的な部分で困ったり、質問があれば遠慮なく聞いてね。応援してるよ！
+othello_project/
+├── app.py               # Flaskアプリケーションのエントリーポイント
+├── config.py            # MySQL接続情報、シークレットキーなどの設定
+├── models.py            # SQLAlchemyによるデータベース（ユーザー、ログ等）のモデル定義
+├── game.py              # オセロのゲームロジック（盤面管理、石の反転、勝敗判定など）
+├── match.py             # マッチング処理（待機リスト、タイムアウト処理など）の実装
+├── requirements.txt     # 利用するPythonパッケージ一覧
+├── logs.py              # ログ管理（IPアドレスやアクセス時間などの記録用、必要に応じて）
+├── templates/           # HTMLテンプレートディレクトリ
+│   ├── base.html        # 共通レイアウト（ヘッダー・フッター等）
+│   ├── index.html       # トップページ（ID入力やマッチング前画面）
+│   ├── login.html       # ログインページ
+│   ├── register.html    # アカウント登録ページ
+│   ├── account_edit.html# アカウント編集ページ
+│   └── game.html        # オセロ対戦画面
+└── static/              # 静的ファイル（CSS, JavaScript, 画像など）
+    ├── css/
+    │   └── style.css    # サイト全体のスタイルシート
+    └── js/
+        └── socket_client.js  # Socket.IOクライアントのスクリプト（盤面更新やイベント処理）
+
