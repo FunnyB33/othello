@@ -60,7 +60,10 @@ python -m venv venv
   ``` bash
   pip freeze > requirements.txt
   ```
-  
+  読み込み方法
+  ``` bash
+  pip install -r requirements.txt
+  ```
 ### 基本的なFlaskアプリの作成
 ``` python
 # app.py
