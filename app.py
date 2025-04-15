@@ -1,30 +1,68 @@
-# app.py
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO
-from config import SECRET_KEY
-from models import db  # Flask-SQLAlchemyで初期化したdb
-import match  # マッチング処理モジュール
-import logs   # ログ管理モジュール
+from flask import Flask, request, jsonify
+import uuid
+import mysql.connector
+import config
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = SECRET_KEY
-# MySQL接続情報などもapp.configに設定する
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{app.config.get('MYSQL_USER')}:{app.config.get('MYSQL_PASSWORD')}@{app.config.get('MYSQL_HOST')}/{app.config.get('MYSQL_DB')}"
-db.init_app(app)
 
-socketio = SocketIO(app)
+# MySQL 
+host = config.connection["HOST"]
+user = config.connection["USER"]
+password = config.connection["PASSWORD"]
+database = config.connection["DB"]
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+conn = mysql.connector.connect(host, user, password, database)
+cursor = conn.cursor(dictionary=True)
 
-# ルーティング例（ログイン、登録、アカウント編集など）
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # ログイン処理
-    return render_template('login.html')
+@app.route('/join_room', methods=['POST'])
+def join_room():
+    data = request.json
+    nickname = data['nickname']
+    room_id = data['room_id']
 
-# など必要なルーティングを追加
+    # プレイヤー登録
+    player_id = str(uuid.uuid4())
+    cursor.execute(
+        "INSERT INTO players (player_id, nickname, room_id) VALUES (%s, %s, %s)",
+        (player_id, nickname, room_id)
+    )
+    conn.commit()
+
+    # 同じroom_idのユーザーを取得 (作成日時の古い順に2人取得)
+    cursor.execute(
+        "SELECT * FROM players WHERE room_id = %s ORDER BY created_at ASC LIMIT 2",
+        (room_id,)
+    )
+    players = cursor.fetchall()
+
+    # 2人揃ったらマッチング作成
+    if len(players) == 2:
+        match_id = str(uuid.uuid4())
+        cursor.execute(
+            "INSERT INTO matches (match_id, player1_id, player2_id, room_id, status) VALUES (%s, %s, %s, %s, 'playing')",
+            (match_id, players[0]['player_id'], players[1]['player_id'], room_id)
+        )
+        conn.commit()
+        return jsonify({"message": "マッチング成立！", "match_id": match_id})
+
+    return jsonify({"message": "プレイヤーを待っています。", "player_id": player_id})
+
+@app.route('/make_move', methods=['POST'])
+def make_move():
+    data = request.json
+    match_id = data['match_id']
+    player_id = data['player_id']
+    position = data['position']
+    move_number = data['move_number']
+
+    cursor.execute(
+        "INSERT INTO moves (match_id, player_id, move_position, move_number) VALUES (%s, %s, %s, %s)",
+        (match_id, player_id, position, move_number)
+    )
+    conn.commit()
+
+    return jsonify({"message": "駒の位置が記録されました。"})
+
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    app.run(debug=True)
