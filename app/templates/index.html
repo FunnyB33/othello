@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>Othello Online Match</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background-color: #f2f2f2;
+                text-align: center;
+                margin-top: 100px;
+            }
+            h1 {
+                color: #333;
+            }
+            form {
+                background-color: white;
+                padding: 30px;
+                display: inline-block;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            input[type="text"] {
+                width: 250px;
+                padding: 10px;
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+                color: white;
+                background-color: #0078D7;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #005fa3;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>オンラインオセロ：合言葉でマッチ</h1>
+        <form method="POST">
+            <p>合言葉を入力して、友達とマッチしよう！</p>
+            <input type="text" name="keyword" placeholder="例：abc123" required>
+            <br>
+            <button type="submit">マッチ開始！</button>
+        </form>
+    </body>
+</html>

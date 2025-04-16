@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>Othello Game</title>
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                margin: 0;
+                padding: 40px;
+                background-color: #f9f9f9;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            #board {
+                display: grid;
+                grid-template-columns: repeat(8, 50px);
+                grid-template-rows: repeat(8, 50px);
+                gap: 2px;
+                margin-right: 50px;
+            }
+            .cell {
+                width: 50px;
+                height: 50px;
+                background-color: #2e7d32;
+                border-radius: 4px;
+                position: relative;
+                cursor: pointer;
+            }
+            .disc {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                position: absolute;
+                top: 5px;
+                left: 5px;
+            }
+            .black { background-color: black; }
+            .white { background-color: white; }
+            #log {
+                width: 300px;
+                background-color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                max-height: 500px;
+                overflow-y: auto;
+            }
+            #log h3 {
+                margin-top: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="board">
+            <!-- JSで動的にセル生成 -->
+        </div>
+        <div id="log">
+            <h3>手のログ</h3>
+            <ul id="log-list">
+                <!-- JSでログ表示 -->
+            </ul>
+        </div>
+        <script>
+            const bordElement = document.getElementById("board");
+            const logList = document.getElementById("log-list");
+
+            // 仮の状態：盤面の初期化
+            for (let y = 0; y < 8; y++){
+                for (let x = 0; x < 8; x++){
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    // 中央初期配置
+                    if ((x === 3 && y === 3) || (x === 4 && y === 4)) {
+                        const disc = document.createElement("div");
+                        disc.classList.add("disc", "white");
+                        cell.appendChild(disc);
+                    }else if ((x === 3 && y === 4) || (x === 4 && y === 3)){
+                        const disc = document.createElement("div");
+                        disc.classList.add("disc", "black");
+                        cell.appendChild(disc);
+                    }
+
+                    cell.addEventListener("click", () => {
+                        // ここでサーバーに手を送信する（後でwebSocket実装）
+                        const x = cell.dataset.x;
+                        const y = cell.dataset.y;
+                        console.log(`クリックされたマス： ${x}, ${y}`);
+
+                        
+                        logList.appendChild(li);
+                    });
+                    bordElement.appendChild(cell);
+                }
+            }
+        </script>
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script>
+            const socket = io()
+            const room = "{{ room}}"; // Flaskから渡される合言葉＝部屋名
+
+            socket.emit('join', { room: room});
+
+            // 石を置いたときの処理
+            function placeStone(x, y, color) {
+                const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+                if (!cell || cell.querySelector(".disc")) return; // すでに置いてある場合はスキップ
+
+                const disc = document.createElement("div");
+                disc.classList.add("disc", color);
+                cell.appendChild(disc);
+
+                cell.replaceWith(cell.cloneNode(true)); // remove all event listeners
+            }
+
+            // クリック -> サーバーに送信
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const x = cell.dataset.x;
+                    const y = cell.dataset.y;
+                    // すでに駒があるならreturn（ログも何もしない）
+                    if (cell.querySelector(".disc")) return;
+
+                    const color = "black"; // 仮。色の管理は後で追加 // 今は仮で全員黒（あとで交互にする）
+
+                    socket.emit('put_stone', { room: room, x: x, y: y, color: color});
+                });
+            });
+
+            // サーバーから受け取った石を描画
+            socket.on('update_board', data => {
+                console.log("update_board受信:", data);
+                placeStone(data.x, data.y, data.color)
+
+                const li = document.createElement("li");
+                li.textContent = `(${data.x}, ${data.y}) に ${data.color} を置きました`;
+                document.getElementById("log-list").appendChild(li);
+            });
+
+
+        </script>
+    </body>
+</html>

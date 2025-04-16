@@ -1,17 +1,21 @@
 ``` text
-othello-game/
-├── 📁 app/                   # Flaskアプリケーション本体
-│   ├── 📄 __init__.py        # アプリケーション初期化
-│   ├── 📄 routes.py          # Flaskルート（API定義）
-│   ├── 📄 models.py          # DBモデル定義（SQLAlchemyも使用可）
-│   ├── 📄 game_logic.py      # オセロゲームのロジック（判定処理など）
-│   ├── 📁 templates/         # HTMLテンプレート
-│   │   └── 📄 index.html     # メインページ（ゲーム画面）
-│   └── 📁 static/            # 静的ファイル（CSS, JS, 画像）
-│       ├── 📄 style.css      # CSSスタイル
-│       └── 📄 script.js      # フロントエンドのJS処理（AjaxやWebSocket）
-│
-├── 📄 config.py              # 設定ファイル（DB接続情報など）
-├── 📄 requirements.txt       # 必要なPythonライブラリリスト
-└── 📄 run.py                 # Flaskアプリケーションの起動スクリプト
+othello/
+├── app/
+│   ├── __init__.py
+│   ├── routes.py          ← 画面遷移とマッチ処理
+│   ├── game.py            ← オセロロジック処理
+│   ├── socketio_events.py ← WebSocket用イベント管理
+│   └── templates/
+│       ├── index.html     ← 合言葉入力
+│       └── game.html      ← ゲーム画面（ログ右側）
+│   └── static/
+│       ├── css/
+│       └── js/
+│           └── game.js    ← JSでWebSocket通信・盤面描画
+├── run.py                 ← アプリ起動用
+├── requirements.txt
+└── README.md
+
 ```
+
+[ChatGPT](https://chatgpt.com/share/67ff37dc-66b0-800e-aabd-99c3d58fa7bc)
